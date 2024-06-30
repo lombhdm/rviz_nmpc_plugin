@@ -1,0 +1,9 @@
+<library path="lib/librviz_nmpc_plugin">
+  <class name="rviz_nmpc_plugin/RMF NMPC"
+         type="rviz_nmpc_plugin::rmf_panel"
+         base_class_type="rviz::Panel">
+    <description>
+      A rviz panel widget for RMF.
+    </description>
+  </class>
+</library>
