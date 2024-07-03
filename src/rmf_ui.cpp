@@ -7,7 +7,7 @@ namespace rviz_nmpc_plugin
         srvc_start = nh.serviceClient<std_srvs::SetBool>(
             "/nmpc/start");
         srvc_sdf = nh.serviceClient<std_srvs::Trigger>(
-            "/nmpc/sdf");
+            "/nmpc/df_flag");
         srvc_goto = nh.serviceClient<std_srvs::Trigger>(
             "/nmpc/goto");
 
