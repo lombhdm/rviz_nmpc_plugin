@@ -4,7 +4,8 @@ namespace rviz_nmpc_plugin
 {
     rmf_panel::rmf_panel(QWidget *parent) : rviz::Panel(parent)
     {
-        srvc_flag = nh.serviceClient<std_srvs::Trigger>("/nmpc/flag");
+        srvc_get_flag = nh.serviceClient<std_srvs::Trigger>("/nmpc/get_flag");
+        srvc_set_flag = nh.serviceClient<std_srvs::SetBool>("/nmpc/set_flag");
         srvc_hover = nh.serviceClient<std_srvs::Trigger>("/nmpc/hover");
         srvc_takeoff = nh.serviceClient<std_srvs::Trigger>("/nmpc/takeoff");
         srvc_goto = nh.serviceClient<std_srvs::Trigger>("/nmpc/goto");
@@ -18,11 +19,12 @@ namespace rviz_nmpc_plugin
         btn_goto = new QPushButton;
         btn_stop = new QPushButton;
 
-        btn_flag->setText("toggle SDF (-)");
+
+        (void)get_flag_status();
         btn_hover->setText("hover in place");
         btn_takeoff->setText("takeoff");
         btn_goto->setText("goto wp");
-        btn_stop->setText("stop NMPC");
+        btn_stop->setText("stop");
 
         v_box_layout->addWidget(btn_flag);
         v_box_layout->addWidget(btn_hover);
@@ -45,13 +47,32 @@ namespace rviz_nmpc_plugin
         connect(btn_stop, SIGNAL(clicked()), this, SLOT(onclick_stop()));
     }
 
+    bool rmf_panel::get_flag_status()
+    {
+        std_srvs::Trigger srv;
+        bool ret = false;
+        if (!srvc_get_flag.call(srv))
+            btn_flag->setText("toggle SDF (-)");
+        else if (!srv.response.success)
+            btn_flag->setText("toggle SDF (OFF)");
+        else
+        {
+            btn_flag->setText("toggle SDF (ON)");
+            ret = true;
+        }
+        return ret;
+    }
+
     // onclick events
     void rmf_panel::onclick_flag()
     {
-        std_srvs::Trigger srv;
-        if (!srvc_flag.call(srv))
+        bool status = get_flag_status();
+
+        std_srvs::SetBool srv;
+        srv.request.data = !status;
+        if (!srvc_set_flag.call(srv))
         {
-            ROS_ERROR("[RMF-UI] Service call failed: %s", srvc_flag.getService().c_str());
+            ROS_ERROR("[RMF-UI] Service call failed: %s", srvc_set_flag.getService().c_str());
             btn_flag->setText("toggle SDF (-)");
         }
         else
@@ -86,11 +107,20 @@ namespace rviz_nmpc_plugin
 
     void rmf_panel::onclick_stop()
     {
+        // hover
         std_srvs::Trigger srv;
         if (!srvc_stop.call(srv))
             ROS_ERROR("[RMF-UI] Service call failed: %s", srvc_stop.getService().c_str());
-        else
-            btn_flag->setText("toggle SDF (OFF)");
+        // disable constraint flag, if enabled
+        if (get_flag_status())
+        {
+            std_srvs::SetBool srv;
+            srv.request.data = false;
+            if (!srvc_set_flag.call(srv))
+                ROS_ERROR("[RMF-UI] Service call failed: %s", srvc_set_flag.getService().c_str());
+            else
+                btn_flag->setText("toggle SDF (OFF)");
+        }
     }
 
 

@@ -5,6 +5,7 @@
 #include <std_msgs/ColorRGBA.h>
 #include <stdio.h>
 #include <std_srvs/Trigger.h>
+#include <std_srvs/SetBool.h>
 
 #ifndef Q_MOC_RUN
 #include <QPainter>
@@ -41,7 +42,9 @@ namespace rviz_nmpc_plugin
 
         protected:
             QPushButton *btn_flag;
-            ros::ServiceClient srvc_flag;
+            ros::ServiceClient srvc_get_flag;
+            ros::ServiceClient srvc_set_flag;
+            bool get_flag_status();
 
             QPushButton *btn_hover;
             ros::ServiceClient srvc_hover;
