@@ -4,9 +4,7 @@
 #include <ros/ros.h>
 #include <std_msgs/ColorRGBA.h>
 #include <stdio.h>
-#include <std_srvs/Empty.h>
 #include <std_srvs/Trigger.h>
-#include <std_srvs/SetBool.h>
 
 #ifndef Q_MOC_RUN
 #include <QPainter>
@@ -33,28 +31,26 @@ namespace rviz_nmpc_plugin
             virtual void save(rviz::Config config) const;
 
         public Q_SLOTS:
-            void on_start_click();
-            void on_sdf_click();
-            void on_goto_click();
-            void on_reset_click();
-            void on_stop_click();
+            void onclick_flag();
+            void onclick_hover();
+            void onclick_takeoff();
+            void onclick_goto();
+            void onclick_stop();
 
         protected Q_SLOTS:
 
         protected:
-            QPushButton *btn_start;
-            ros::ServiceClient srvc_start;
+            QPushButton *btn_flag;
+            ros::ServiceClient srvc_flag;
 
-            QPushButton *btn_sdf;
-            ros::ServiceClient srvc_sdf;
-            bool sdf_on = false;
+            QPushButton *btn_hover;
+            ros::ServiceClient srvc_hover;
+
+            QPushButton *btn_takeoff;
+            ros::ServiceClient srvc_takeoff;
 
             QPushButton *btn_goto;
             ros::ServiceClient srvc_goto;
-            bool goto_on = false;
-
-            QPushButton *btn_reset;
-            ros::ServiceClient srvc_reset;
 
             QPushButton *btn_stop;
             ros::ServiceClient srvc_stop;

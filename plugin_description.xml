@@ -3,7 +3,7 @@
          type="rviz_nmpc_plugin::rmf_panel"
          base_class_type="rviz::Panel">
     <description>
-      A rviz panel widget for RMF.
+        A rviz panel widget for the SDF_NMPC navigation method.
     </description>
   </class>
 </library>

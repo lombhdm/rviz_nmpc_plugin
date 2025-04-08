@@ -4,31 +4,30 @@ namespace rviz_nmpc_plugin
 {
     rmf_panel::rmf_panel(QWidget *parent) : rviz::Panel(parent)
     {
-        srvc_start = nh.serviceClient<std_srvs::SetBool>(
-            "/nmpc/start");
-        srvc_sdf = nh.serviceClient<std_srvs::Trigger>(
-            "/nmpc/df_flag");
-        srvc_goto = nh.serviceClient<std_srvs::Trigger>(
-            "/nmpc/goto");
+        srvc_flag = nh.serviceClient<std_srvs::Trigger>("/nmpc/flag");
+        srvc_hover = nh.serviceClient<std_srvs::Trigger>("/nmpc/hover");
+        srvc_takeoff = nh.serviceClient<std_srvs::Trigger>("/nmpc/takeoff");
+        srvc_goto = nh.serviceClient<std_srvs::Trigger>("/nmpc/goto");
+        srvc_stop = nh.serviceClient<std_srvs::Trigger>("/nmpc/stop");
 
         QVBoxLayout *v_box_layout = new QVBoxLayout;
 
-        btn_start = new QPushButton;
-        btn_sdf = new QPushButton;
+        btn_flag = new QPushButton;
+        btn_hover = new QPushButton;
+        btn_takeoff = new QPushButton;
         btn_goto = new QPushButton;
-        btn_reset = new QPushButton;
         btn_stop = new QPushButton;
 
-        btn_start->setText("start NMPC");
-        btn_sdf->setText("start SDF constraint");
-        btn_goto->setText("start goto wp");
-        btn_reset->setText("emerg stop");
+        btn_flag->setText("toggle SDF (-)");
+        btn_hover->setText("hover in place");
+        btn_takeoff->setText("takeoff");
+        btn_goto->setText("goto wp");
         btn_stop->setText("stop NMPC");
 
-        v_box_layout->addWidget(btn_start);
-        v_box_layout->addWidget(btn_sdf);
+        v_box_layout->addWidget(btn_flag);
+        v_box_layout->addWidget(btn_hover);
+        v_box_layout->addWidget(btn_takeoff);
         v_box_layout->addWidget(btn_goto);
-        v_box_layout->addWidget(btn_reset);
         v_box_layout->addWidget(btn_stop);
 
         QVBoxLayout *global_vbox_layout = new QVBoxLayout;
@@ -39,86 +38,59 @@ namespace rviz_nmpc_plugin
 
         setLayout(v_box_layout);
 
-        connect(btn_start, SIGNAL(clicked()), this, SLOT(on_start_click()));
-        connect(btn_sdf, SIGNAL(clicked()), this, SLOT(on_sdf_click()));
-        connect(btn_goto, SIGNAL(clicked()), this, SLOT(on_goto_click()));
-        connect(btn_reset, SIGNAL(clicked()), this, SLOT(on_reset_click()));
-        connect(btn_stop, SIGNAL(clicked()), this, SLOT(on_stop_click()));
+        connect(btn_flag, SIGNAL(clicked()), this, SLOT(onclick_flag()));
+        connect(btn_hover, SIGNAL(clicked()), this, SLOT(onclick_hover()));
+        connect(btn_takeoff, SIGNAL(clicked()), this, SLOT(onclick_takeoff()));
+        connect(btn_goto, SIGNAL(clicked()), this, SLOT(onclick_goto()));
+        connect(btn_stop, SIGNAL(clicked()), this, SLOT(onclick_stop()));
     }
 
-    // on_click events
-    void rmf_panel::on_start_click()
-    {
-        std_srvs::SetBool srv;
-        srv.request.data = true;
-        if (!srvc_start.call(srv))
-        {
-            ROS_ERROR("[RMF-UI] Service call failed: %s",
-                    srvc_start.getService().c_str());
-        }
-    }
-
-    void rmf_panel::on_sdf_click()
+    // onclick events
+    void rmf_panel::onclick_flag()
     {
         std_srvs::Trigger srv;
-        if (!srvc_sdf.call(srv))
+        if (!srvc_flag.call(srv))
         {
-            ROS_ERROR("[RMF-UI] Service call failed: %s",
-                    srvc_sdf.getService().c_str());
-            return;
+            ROS_ERROR("[RMF-UI] Service call failed: %s", srvc_flag.getService().c_str());
+            btn_flag->setText("toggle SDF (-)");
         }
-        if (sdf_on)
-            btn_sdf->setText("start SDF constraint");
         else
-            btn_sdf->setText("stop SDF constraint");
-        sdf_on = !sdf_on;
+        {
+            if (srv.response.success)
+                btn_flag->setText("toggle SDF (ON)");
+            else
+                btn_flag->setText("toggle SDF (OFF)");
+        }
     }
 
-    void rmf_panel::on_goto_click()
+    void rmf_panel::onclick_hover()
+    {
+        std_srvs::Trigger srv;
+        if (!srvc_hover.call(srv))
+            ROS_ERROR("[RMF-UI] Service call failed: %s", srvc_hover.getService().c_str());
+    }
+
+    void rmf_panel::onclick_takeoff()
+    {
+        std_srvs::Trigger srv;
+        if (!srvc_takeoff.call(srv))
+            ROS_ERROR("[RMF-UI] Service call failed: %s", srvc_takeoff.getService().c_str());
+    }
+
+    void rmf_panel::onclick_goto()
     {
         std_srvs::Trigger srv;
         if (!srvc_goto.call(srv))
-        {
-            ROS_ERROR("[RMF-UI] Service call failed: %s",
-                    srvc_goto.getService().c_str());
-            return;
-        }
-        if (goto_on)
-            btn_goto->setText("start goto wp");
-        else
-            btn_goto->setText("stop goto wp");
-        goto_on = !goto_on;
+            ROS_ERROR("[RMF-UI] Service call failed: %s", srvc_goto.getService().c_str());
     }
 
-    void rmf_panel::on_reset_click()
+    void rmf_panel::onclick_stop()
     {
         std_srvs::Trigger srv;
-        if (!sdf_on || !srvc_sdf.call(srv))
-        {
-            ROS_ERROR("[RMF-UI] Service call failed: %s",
-                    srvc_goto.getService().c_str());
-        }
-        if (!goto_on || !srvc_goto.call(srv))
-        {
-            ROS_ERROR("[RMF-UI] Service call failed: %s",
-                    srvc_goto.getService().c_str());
-        }
-
-        sdf_on = false;
-        goto_on = false;
-        btn_sdf->setText("start SDF constraint");
-        btn_goto->setText("start goto wp");
-    }
-
-    void rmf_panel::on_stop_click()
-    {
-        std_srvs::SetBool srv;
-        srv.request.data = false;
-        if (!srvc_start.call(srv))
-        {
-            ROS_ERROR("[RMF-UI] Service call failed: %s",
-                    srvc_start.getService().c_str());
-        }
+        if (!srvc_stop.call(srv))
+            ROS_ERROR("[RMF-UI] Service call failed: %s", srvc_stop.getService().c_str());
+        else
+            btn_flag->setText("toggle SDF (OFF)");
     }
 
 
