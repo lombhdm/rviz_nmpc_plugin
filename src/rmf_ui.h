@@ -33,6 +33,7 @@ namespace rviz_nmpc_plugin
 
         public Q_SLOTS:
             void onclick_flag();
+            void onclick_yaw_mode();
             void onclick_hover();
             void onclick_takeoff();
             void onclick_goto();
@@ -45,6 +46,11 @@ namespace rviz_nmpc_plugin
             ros::ServiceClient srvc_get_flag;
             ros::ServiceClient srvc_set_flag;
             bool get_flag_status();
+
+            QPushButton *btn_yaw_mode;
+            ros::ServiceClient srvc_get_yaw_mode;
+            ros::ServiceClient srvc_set_yaw_mode;
+            bool get_yaw_status();
 
             QPushButton *btn_hover;
             ros::ServiceClient srvc_hover;

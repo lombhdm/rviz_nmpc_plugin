@@ -6,6 +6,8 @@ namespace rviz_nmpc_plugin
     {
         srvc_get_flag = nh.serviceClient<std_srvs::Trigger>("/nmpc/get_flag");
         srvc_set_flag = nh.serviceClient<std_srvs::SetBool>("/nmpc/set_flag");
+        srvc_get_yaw_mode = nh.serviceClient<std_srvs::Trigger>("/nmpc/get_yaw_mode");
+        srvc_set_yaw_mode = nh.serviceClient<std_srvs::SetBool>("/nmpc/set_yaw_mode");
         srvc_hover = nh.serviceClient<std_srvs::Trigger>("/nmpc/hover");
         srvc_takeoff = nh.serviceClient<std_srvs::Trigger>("/nmpc/takeoff");
         srvc_goto = nh.serviceClient<std_srvs::Trigger>("/nmpc/goto");
@@ -14,6 +16,7 @@ namespace rviz_nmpc_plugin
         QVBoxLayout *v_box_layout = new QVBoxLayout;
 
         btn_flag = new QPushButton;
+        btn_yaw_mode = new QPushButton;
         btn_hover = new QPushButton;
         btn_takeoff = new QPushButton;
         btn_goto = new QPushButton;
@@ -21,12 +24,14 @@ namespace rviz_nmpc_plugin
 
 
         (void)get_flag_status();
+        (void)get_yaw_status();
         btn_hover->setText("hover in place");
         btn_takeoff->setText("takeoff");
         btn_goto->setText("goto wp");
         btn_stop->setText("stop");
 
         v_box_layout->addWidget(btn_flag);
+        v_box_layout->addWidget(btn_yaw_mode);
         v_box_layout->addWidget(btn_hover);
         v_box_layout->addWidget(btn_takeoff);
         v_box_layout->addWidget(btn_goto);
@@ -41,12 +46,14 @@ namespace rviz_nmpc_plugin
         setLayout(v_box_layout);
 
         connect(btn_flag, SIGNAL(clicked()), this, SLOT(onclick_flag()));
+        connect(btn_yaw_mode, SIGNAL(clicked()), this, SLOT(onclick_yaw_mode()));
         connect(btn_hover, SIGNAL(clicked()), this, SLOT(onclick_hover()));
         connect(btn_takeoff, SIGNAL(clicked()), this, SLOT(onclick_takeoff()));
         connect(btn_goto, SIGNAL(clicked()), this, SLOT(onclick_goto()));
         connect(btn_stop, SIGNAL(clicked()), this, SLOT(onclick_stop()));
     }
 
+    // status checker
     bool rmf_panel::get_flag_status()
     {
         std_srvs::Trigger srv;
@@ -58,6 +65,22 @@ namespace rviz_nmpc_plugin
         else
         {
             btn_flag->setText("toggle SDF (ON)");
+            ret = true;
+        }
+        return ret;
+    }
+
+    bool rmf_panel::get_yaw_status()
+    {
+        std_srvs::Trigger srv;
+        bool ret = false;
+        if (!srvc_get_yaw_mode.call(srv))
+            btn_yaw_mode->setText("toggle free yaw (-)");
+        else if (!srv.response.success)
+            btn_yaw_mode->setText("toggle free yaw (OFF)");
+        else
+        {
+            btn_yaw_mode->setText("toggle free yaw (ON)");
             ret = true;
         }
         return ret;
@@ -81,6 +104,26 @@ namespace rviz_nmpc_plugin
                 btn_flag->setText("toggle SDF (ON)");
             else
                 btn_flag->setText("toggle SDF (OFF)");
+        }
+    }
+
+    void rmf_panel::onclick_yaw_mode()
+    {
+        bool status = get_yaw_status();
+
+        std_srvs::SetBool srv;
+        srv.request.data = !status;
+        if (!srvc_set_yaw_mode.call(srv))
+        {
+            ROS_ERROR("[RMF-UI] Service call failed: %s", srvc_set_yaw_mode.getService().c_str());
+            btn_yaw_mode->setText("toggle free yaw (-)");
+        }
+        else
+        {
+            if (srv.response.success)
+                btn_yaw_mode->setText("toggle free yaw (ON)");
+            else
+                btn_yaw_mode->setText("toggle free yaw (OFF)");
         }
     }
 
