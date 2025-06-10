@@ -42,6 +42,9 @@ namespace rviz_nmpc_plugin
         protected Q_SLOTS:
 
         protected:
+            ros::Timer srv_query_timer;
+            void timerCallback(const ros::TimerEvent&);
+
             QPushButton *btn_flag;
             ros::ServiceClient srvc_get_flag;
             ros::ServiceClient srvc_set_flag;

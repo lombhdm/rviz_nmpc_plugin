@@ -23,8 +23,8 @@ namespace rviz_nmpc_plugin
         btn_stop = new QPushButton;
 
 
-        (void)get_flag_status();
-        (void)get_yaw_status();
+        btn_flag->setText("-");
+        btn_yaw_mode->setText("-");
         btn_hover->setText("hover in place");
         btn_takeoff->setText("takeoff");
         btn_goto->setText("goto wp");
@@ -51,6 +51,8 @@ namespace rviz_nmpc_plugin
         connect(btn_takeoff, SIGNAL(clicked()), this, SLOT(onclick_takeoff()));
         connect(btn_goto, SIGNAL(clicked()), this, SLOT(onclick_goto()));
         connect(btn_stop, SIGNAL(clicked()), this, SLOT(onclick_stop()));
+
+        srv_query_timer = nh.createTimer(ros::Duration(1.0), &rmf_panel::timerCallback, this);
     }
 
     // status checker
@@ -166,6 +168,13 @@ namespace rviz_nmpc_plugin
         }
     }
 
+
+    // Timer callback
+    void rmf_panel::timerCallback(const ros::TimerEvent&)
+    {
+        (void)get_flag_status();
+        (void)get_yaw_status();
+    }
 
     // save/load
     void rmf_panel::save(rviz::Config config) const
