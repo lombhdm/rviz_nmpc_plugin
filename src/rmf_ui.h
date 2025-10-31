@@ -1,35 +1,35 @@
-#ifndef RMF_UI_H
-#define RMF_UI_H
+#pragma once
 
-#include <ros/ros.h>
-#include <std_msgs/ColorRGBA.h>
-#include <stdio.h>
-#include <std_srvs/Trigger.h>
-#include <std_srvs/SetBool.h>
+// #include <memory>
+#include <chrono>
+
+#include <rclcpp/rclcpp.hpp>
+#include <std_srvs/srv/trigger.hpp>
+#include <std_srvs/srv/set_bool.hpp>
 
 #ifndef Q_MOC_RUN
-#include <QPainter>
-#include <QLineEdit>
-#include <QVBoxLayout>
-#include <QHBoxLayout>
-#include <QPushButton>
-#include <QLabel>
-#include <QTimer>
-#include <rviz/panel.h>
+    #include <QPainter>
+    #include <QLineEdit>
+    #include <QVBoxLayout>
+    #include <QHBoxLayout>
+    #include <QPushButton>
+    #include <QLabel>
 #endif
 
-class QLineEdit;
-class QPushButton;
+#include <rviz_common/panel.hpp>
 
 namespace rviz_nmpc_plugin
 {
-    class rmf_panel : public rviz::Panel
+    class nmpc_panel : public rviz_common::Panel
     {
         Q_OBJECT
         public:
-            rmf_panel(QWidget *parent = 0);
-            virtual void load(const rviz::Config &config);
-            virtual void save(rviz::Config config) const;
+            nmpc_panel(QWidget *parent = 0);
+            void onInitialize() override;
+            void load(const rviz_common::Config& config) override;
+            void save(rviz_common::Config config) const override;
+            // virtual void load(const rviz::Config &config);
+            // virtual void save(rviz::Config config) const;
 
         public Q_SLOTS:
             void onclick_flag();
@@ -42,34 +42,31 @@ namespace rviz_nmpc_plugin
         protected Q_SLOTS:
 
         protected:
-            ros::Timer srv_query_timer;
-            void timerCallback(const ros::TimerEvent&);
+            // periodic status polling
+            void onTimer();
+            QTimer* qt_timer_{nullptr};
 
-            QPushButton *btn_flag;
-            ros::ServiceClient srvc_get_flag;
-            ros::ServiceClient srvc_set_flag;
+            // helpers
             bool get_flag_status();
+            bool get_yaw_mode_status();
 
-            QPushButton *btn_yaw_mode;
-            ros::ServiceClient srvc_get_yaw_mode;
-            ros::ServiceClient srvc_set_yaw_mode;
-            bool get_yaw_status();
+            // Qt widgets
+            QPushButton* btn_flag{nullptr};
+            QPushButton* btn_yaw_mode{nullptr};
+            QPushButton* btn_hover{nullptr};
+            QPushButton* btn_takeoff{nullptr};
+            QPushButton* btn_goto{nullptr};
+            QPushButton* btn_stop{nullptr};
 
-            QPushButton *btn_hover;
-            ros::ServiceClient srvc_hover;
-
-            QPushButton *btn_takeoff;
-            ros::ServiceClient srvc_takeoff;
-
-            QPushButton *btn_goto;
-            ros::ServiceClient srvc_goto;
-
-            QPushButton *btn_stop;
-            ros::ServiceClient srvc_stop;
-
-            ros::NodeHandle nh;
+            // ROS 2 bits
+            rclcpp::Node::SharedPtr node_;
+            rclcpp::Client<std_srvs::srv::Trigger>::SharedPtr srvc_get_flag_;
+            rclcpp::Client<std_srvs::srv::SetBool>::SharedPtr  srvc_set_flag_;
+            rclcpp::Client<std_srvs::srv::Trigger>::SharedPtr srvc_get_yaw_mode_;
+            rclcpp::Client<std_srvs::srv::SetBool>::SharedPtr  srvc_set_yaw_mode_;
+            rclcpp::Client<std_srvs::srv::Trigger>::SharedPtr srvc_hover_;
+            rclcpp::Client<std_srvs::srv::Trigger>::SharedPtr srvc_takeoff_;
+            rclcpp::Client<std_srvs::srv::Trigger>::SharedPtr srvc_goto_;
+            rclcpp::Client<std_srvs::srv::Trigger>::SharedPtr srvc_stop_;
     };
-
-} // namespace rmf_ui
-
-#endif // RMF_UI_H
+} // namespace rviz_nmpc_plugin
