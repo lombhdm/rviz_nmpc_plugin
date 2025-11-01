@@ -44,14 +44,14 @@ namespace rviz_nmpc_plugin
         );
 
         //  service clients
-        srvc_get_flag_     = node_->create_client<std_srvs::srv::Trigger>("get_flag");
-        srvc_set_flag_     = node_->create_client<std_srvs::srv::SetBool>("set_flag");
-        srvc_get_yaw_mode_ = node_->create_client<std_srvs::srv::Trigger>("get_yaw_mode");
-        srvc_set_yaw_mode_ = node_->create_client<std_srvs::srv::SetBool>("set_yaw_mode");
-        srvc_hover_        = node_->create_client<std_srvs::srv::Trigger>("hover");
-        srvc_takeoff_      = node_->create_client<std_srvs::srv::Trigger>("takeoff");
-        srvc_goto_         = node_->create_client<std_srvs::srv::Trigger>("goto");
-        srvc_stop_         = node_->create_client<std_srvs::srv::Trigger>("stop");
+        srvc_get_flag_     = node_->create_client<std_srvs::srv::Trigger>("/sdf_nmpc/get_flag");
+        srvc_set_flag_     = node_->create_client<std_srvs::srv::SetBool>("/sdf_nmpc/set_flag");
+        srvc_get_yaw_mode_ = node_->create_client<std_srvs::srv::Trigger>("/sdf_nmpc/get_yaw_mode");
+        srvc_set_yaw_mode_ = node_->create_client<std_srvs::srv::SetBool>("/sdf_nmpc/set_yaw_mode");
+        srvc_hover_        = node_->create_client<std_srvs::srv::Trigger>("/sdf_nmpc/hover");
+        srvc_takeoff_      = node_->create_client<std_srvs::srv::Trigger>("/sdf_nmpc/takeoff");
+        srvc_goto_         = node_->create_client<std_srvs::srv::Trigger>("/sdf_nmpc/goto");
+        srvc_stop_         = node_->create_client<std_srvs::srv::Trigger>("/sdf_nmpc/stop");
 
         // periodic UI refresh
         qt_timer_ = new QTimer(this);
