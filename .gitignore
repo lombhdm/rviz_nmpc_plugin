@@ -1,0 +1,22 @@
+# Local datasets and model artifacts
+data/
+dataset/
+datasets/
+*.hdf5
+*.h5
+*.pt
+*.pth
+*.ckpt
+weights/
+checkpoints/
+
+# Runtime and build output
+logs/
+build/
+install/
+log/
+
+# Docker image archives
+*.tar
+*.tar.gz
+*.oci
